@@ -125,8 +125,11 @@ tree. A canonical Huffman tree can be more compactly serialized."
 
 (defun huffman-encode (tree sequence)
   "Encode SEQUENCE into a bit sequence using TREE."
-  (cl-loop for symbol elements of sequence
-           nconc (huffman-encode-symbol tree symbol)))
+  (let ((table (make-hash-table :test 'eql)))
+    (cl-loop for (node . bits) in (huffman--flatten tree)
+             do (setf (gethash node table) bits))
+    (cl-loop for symbol elements of sequence
+             nconc (gethash symbol table))))
 
 (cl-defun huffman-decode (tree bits &optional (type 'list))
   "Decode BITS into a TYPE sequence of symbols using TREE.
